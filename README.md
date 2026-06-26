@@ -1,8 +1,4 @@
-# LUMIS — Luxury Movie Site
-
-A premium, dark-themed movie streaming site built with vanilla HTML, CSS and JavaScript. Powered by the TMDB API for live movie data and posters, with multiple embedded streaming servers.
-
----
+# LUMIS 
 
 ## Pages
 
