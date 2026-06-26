@@ -524,17 +524,20 @@
 
     // ── Render full page ───────────────────────────────────────────────────
     function renderPage(data, isMovie) {
-      const title     = isMovie ? (data.title || data.original_title) : (data.name || data.original_name);
+      if (!data || (!data.title && !data.name && !data.original_title && !data.original_name)) {
+        throw new Error('Empty data object');
+      }
+      const title     = (isMovie ? (data.title || data.original_title) : (data.name || data.original_name)) || 'Unknown Title';
       STATE.title     = title;
-      const year      = isMovie ? (data.release_date||'').split('-')[0] : (data.first_air_date||'').split('-')[0];
+      const year      = (isMovie ? (data.release_date||'') : (data.first_air_date||'')).split('-')[0] || '';
       const runtime   = isMovie ? (data.runtime ? `${Math.floor(data.runtime/60)}h ${data.runtime%60}m` : '') : (data.number_of_seasons ? `${data.number_of_seasons} season${data.number_of_seasons>1?'s':''}` : '');
-      const rating    = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
-      const genres    = (data.genres||[]).map(g=>g.name).join(', ') || 'N/A';
+      const rating    = data.vote_average ? Number(data.vote_average).toFixed(1) : 'N/A';
+      const genres    = (data.genres||[]).map(g=>g.name).join(', ') || '';
       const country   = isMovie ? (data.production_countries||[])[0]?.name : (data.origin_country||[])[0];
       const studio    = isMovie ? (data.production_companies||[])[0]?.name : (data.networks||[])[0]?.name;
       const posterUrl = data.poster_path   ? IMG_W500 + data.poster_path   : '';
       const backdropUrl = data.backdrop_path ? IMG_ORIG + data.backdrop_path : '';
-      const imdbUrl   = isMovie && data.imdb_id ? `https://imdb.com/title/${data.imdb_id}` : '';
+      const imdbUrl   = data.imdb_id ? `https://imdb.com/title/${data.imdb_id}` : '';
 
       if (!isMovie) {
         STATE.totalSeasons = (data.seasons||[]).filter(s=>s.season_number>0).length || 1;
@@ -617,17 +620,45 @@
         return;
       }
 
-      // Restore saved progress before fetching
       loadProgress();
 
-      const type = STATE.isTv ? 'tv' : 'movie';
-      try {
+      // Try movie first, then fall back to tv if not found
+      async function tryFetch(type) {
         const r = await fetch(`${TMDB_BASE}/${type}/${STATE.tmdb}?api_key=${TMDB_KEY}&append_to_response=external_ids`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const d = await r.json();
-        STATE.imdb = d.external_ids?.imdb_id || d.imdb_id || '';
-        renderPage(d, !STATE.isTv);
-      } catch {
-        document.getElementById('watch-content').innerHTML = '<p style="color:var(--grey);padding:40px">Failed to load title. <a href="catalogue.html" style="color:var(--gold)">Go back</a></p>';
+        if (d.success === false || (!d.title && !d.name)) throw new Error('Not found');
+        return { d, type };
+      }
+
+      try {
+        let result;
+        if (STATE.isTv) {
+          result = await tryFetch('tv');
+        } else {
+          // Try movie, auto-fallback to tv
+          try {
+            result = await tryFetch('movie');
+          } catch {
+            result = await tryFetch('tv');
+            STATE.isTv = true;
+          }
+        }
+        STATE.imdb = result.d.external_ids?.imdb_id || result.d.imdb_id || '';
+        renderPage(result.d, result.type === 'movie');
+      } catch (err) {
+        console.error('watch.html init error:', err);
+        document.getElementById('watch-content').innerHTML = `
+          <a class="watch-back" href="catalogue.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+            Back to Catalogue
+          </a>
+          <div style="padding:40px;text-align:center;color:var(--grey)">
+            <div style="font-size:48px;margin-bottom:16px">🎬</div>
+            <p style="font-size:16px;color:var(--white);margin-bottom:8px">Could not load this title</p>
+            <p style="font-size:13px;margin-bottom:24px">TMDB ID: ${STATE.tmdb} · Try a different server or check your connection.</p>
+            <a href="catalogue.html" style="color:var(--gold);font-weight:600;text-decoration:none">← Browse Catalogue</a>
+          </div>`;
       }
     }
 
