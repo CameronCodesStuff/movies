@@ -970,3 +970,71 @@ body {
   background: rgba(201,168,76,0.08);
   border-color: var(--gold);
 }
+
+.modal-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proxy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: border-color 0.2s;
+}
+
+.proxy-toggle:hover {
+  border-color: var(--gold-dim);
+}
+
+.proxy-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.proxy-box {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--grey);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.proxy-toggle input:checked ~ .proxy-box {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.proxy-toggle input:checked ~ .proxy-box::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 7px;
+  border: 2px solid var(--black);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.proxy-toggle input:checked ~ .proxy-label {
+  color: var(--gold);
+}
+
+.proxy-label {
+  font-size: 11px;
+  color: var(--grey);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}

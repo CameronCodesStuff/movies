@@ -157,23 +157,42 @@ async function openMovieByTmdb(tmdbId, title) {
   }
 }
 
+const PROXY_BASE = 'https://unblockedmovies.detlaffcameron.workers.dev/';
+
 let currentServer = 0;
 let currentImdb   = '';
 let currentTmdb   = '';
+let useProxy      = false;
 
 function showPlayerModal(title) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('player-modal').classList.add('open');
   document.getElementById('player-modal').setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+  useProxy = false;
+  const cb = document.getElementById('proxy-checkbox');
+  if (cb) cb.checked = false;
   renderServerBtns();
+}
+
+function buildSrc(rawUrl) {
+  if (useProxy) return PROXY_BASE + '?url=' + encodeURIComponent(rawUrl);
+  return rawUrl;
 }
 
 function loadMovieIframe(imdbId, tmdbId) {
   currentImdb = imdbId;
   currentTmdb = tmdbId;
-  const srv = SERVERS[currentServer];
-  document.getElementById('movie-frame').src = srv.movie(imdbId, tmdbId);
+  const srv    = SERVERS[currentServer];
+  const rawUrl = srv.movie(imdbId, tmdbId);
+  document.getElementById('movie-frame').src = buildSrc(rawUrl);
+}
+
+function onProxyToggle() {
+  useProxy = document.getElementById('proxy-checkbox').checked;
+  const frame  = document.getElementById('movie-frame');
+  frame.src = '';
+  setTimeout(() => loadMovieIframe(currentImdb, currentTmdb), 100);
 }
 
 function renderServerBtns() {
@@ -213,11 +232,11 @@ function playFeatured() {
 }
 
 function getWatchlist() {
-  try { return JSON.parse(localStorage.getItem('reel_watchlist') || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('lumis_watchlist') || '[]'); } catch { return []; }
 }
 
 function saveWatchlist(list) {
-  localStorage.setItem('reel_watchlist', JSON.stringify(list));
+  localStorage.setItem('lumis_watchlist', JSON.stringify(list));
 }
 
 function toggleWatchlist(btn) {
@@ -441,10 +460,10 @@ function removeFromListPanel(title) {
 
 let toastTimer;
 function showToast(message) {
-  let toast = document.getElementById('reel-toast');
+  let toast = document.getElementById('lumis-toast');
   if (!toast) {
     toast = document.createElement('div');
-    toast.id = 'reel-toast';
+    toast.id = 'lumis-toast';
     toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A1A1A;color:#F5F0E8;border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:12px 22px;font-family:Inter,sans-serif;font-size:14px;z-index:99999;opacity:0;transition:opacity .25s ease,transform .25s ease;pointer-events:none;white-space:nowrap;';
     document.body.appendChild(toast);
   }

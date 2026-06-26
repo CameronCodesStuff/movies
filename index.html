@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>REEL — Cinema On Demand</title>
+  <title>LUMIS — Cinema On Demand</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,7 +22,7 @@
 
   <nav class="nav">
     <div class="nav-logo" onclick="scrollToTop()">
-      <span class="logo-reel">REEL</span>
+      <span class="logo-reel">LUMIS</span>
       <span class="logo-dot">●</span>
     </div>
     <ul class="nav-links">
@@ -114,8 +114,8 @@
   </main>
 
   <footer class="footer">
-    <div class="footer-logo">REEL<span>●</span></div>
-    <p class="footer-copy">© 2024 REEL Cinema On Demand. All rights reserved.</p>
+    <div class="footer-logo">LUMIS<span>●</span></div>
+    <p class="footer-copy">© 2024 LUMIS Cinema On Demand. All rights reserved.</p>
     <div class="footer-links">
       <a href="#">Privacy</a>
       <a href="#">Terms</a>
@@ -128,7 +128,14 @@
     <div class="modal-container">
       <div class="modal-header" id="modal-header">
         <span class="modal-title" id="modal-title"></span>
-        <div id="server-btns" style="display:flex;gap:8px;"></div>
+        <div class="modal-controls">
+          <label class="proxy-toggle" id="proxy-toggle">
+            <input type="checkbox" id="proxy-checkbox" onchange="onProxyToggle()" />
+            <span class="proxy-box"></span>
+            <span class="proxy-label">Proxy</span>
+          </label>
+          <div id="server-btns" style="display:flex;gap:8px;"></div>
+        </div>
         <button class="modal-close" onclick="closeMovie()" aria-label="Close">✕</button>
       </div>
       <div class="modal-player">
@@ -147,6 +154,6 @@
   </div>
   <div class="mylist-overlay" id="mylist-overlay" onclick="toggleMyListPanel()"></div>
 
-  <script src="main.js"></script>
+  <script src="main.js?v=3"></script>
 </body>
 </html>
