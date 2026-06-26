@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Watch — LUMIS</title>
+  <meta name="description" content="Watch movies and TV shows on LUMIS — Luxury Movie Site." />
+  <meta property="og:site_name" content="LUMIS" />
+  <meta property="og:type" content="video.movie" />
+  <meta property="og:url" content="https://cameroncodesstuff.github.io/lumis/watch.html" />
+  <meta property="og:title" content="Watch — LUMIS" />
+  <meta property="og:description" content="Watch movies and TV shows on LUMIS." />
+  <meta property="og:image" content="https://cameroncodesstuff.github.io/lumis/images/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="view-transition" content="same-origin" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#080808" />
@@ -322,10 +330,10 @@
   </div>
 
   <script>
-    const TMDB_KEY  = '232a7338c36748bff95e5de149a21b95';
-    const TMDB_BASE = 'https://api.themoviedb.org/3';
-    const IMG_W500  = 'https://image.tmdb.org/t/p/w500';
-    const IMG_ORIG  = 'https://image.tmdb.org/t/p/original';
+    const TMDB_KEY   = '232a7338c36748bff95e5de149a21b95';
+    const TMDB_BASE  = 'https://api.themoviedb.org/3';
+    const IMG_W500   = 'https://image.tmdb.org/t/p/w500';
+    const IMG_ORIG   = 'https://image.tmdb.org/t/p/original';
     const PROXY_BASE = 'https://unblockedmovies.detlaffcameron.workers.dev/';
 
     const SERVERS = [
@@ -335,13 +343,39 @@
       { name:'Server 4', movie:(im,tm)=>`https://multiembed.mov/directstream.php?video_id=${tm}&tmdb=1`,                    tv:(im,s,e,tm)=>`https://multiembed.mov/directstream.php?video_id=${tm}&tmdb=1&s=${s}&e=${e}` }
     ];
 
-    let STATE = {
-      tmdb: '', imdb: '', isTv: false,
-      season: 1, episode: 1,
-      server: 0, proxy: false,
-      seasons: []
+    const STATE = {
+      tmdb:'', imdb:'', isTv:false,
+      season:1, episode:1,
+      totalEpisodes:1,
+      totalSeasons:1,
+      server:0, proxy:false,
+      seasons:[], title:''
     };
 
+    // ── Progress / Resume storage ──────────────────────────────────────────
+    const PROGRESS_KEY = 'lumis_progress';
+
+    function getProgress() {
+      try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch { return {}; }
+    }
+
+    function saveProgress() {
+      if (!STATE.isTv || !STATE.tmdb) return;
+      const p = getProgress();
+      p[STATE.tmdb] = { season: STATE.season, episode: STATE.episode, savedAt: Date.now() };
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+    }
+
+    function loadProgress() {
+      if (!STATE.isTv || !STATE.tmdb) return;
+      const saved = getProgress()[STATE.tmdb];
+      if (saved) {
+        STATE.season  = saved.season  || 1;
+        STATE.episode = saved.episode || 1;
+      }
+    }
+
+    // ── URL builder ────────────────────────────────────────────────────────
     function getUrl() {
       const srv = SERVERS[STATE.server];
       const raw = STATE.isTv
@@ -355,8 +389,10 @@
       if (!frame) return;
       frame.src = '';
       setTimeout(() => { frame.src = getUrl(); }, 80);
+      saveProgress();
     }
 
+    // ── Server / proxy controls ────────────────────────────────────────────
     function switchServer(idx) {
       STATE.server = idx;
       document.querySelectorAll('.server-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
@@ -368,8 +404,9 @@
       reloadPlayer();
     }
 
+    // ── Season / episode controls ──────────────────────────────────────────
     function selectSeason(val) {
-      STATE.season = parseInt(val);
+      STATE.season  = parseInt(val);
       STATE.episode = 1;
       loadEpisodes();
     }
@@ -377,34 +414,70 @@
     function selectEp(ep) {
       STATE.episode = ep;
       document.querySelectorAll('.ep-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.ep) === ep));
+      updateNowPlayingLabel();
+      updateNextEpBtn();
       reloadPlayer();
-      document.getElementById('now-playing-label').textContent = `S${STATE.season} E${ep}`;
+    }
+
+    function updateNowPlayingLabel() {
+      const el = document.getElementById('now-playing-label');
+      if (el) el.textContent = STATE.isTv ? `S${STATE.season} E${STATE.episode}` : STATE.title.toUpperCase();
+    }
+
+    function updateNextEpBtn() {
+      const btn = document.getElementById('next-ep-btn');
+      if (!btn) return;
+      btn.style.display = (STATE.isTv && STATE.episode < STATE.totalEpisodes) ? 'inline-flex' : 'none';
+    }
+
+    function nextEpisode() {
+      if (STATE.episode < STATE.totalEpisodes) {
+        selectEp(STATE.episode + 1);
+        document.querySelector('.ep-btn.active')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      } else if (STATE.season < STATE.totalSeasons) {
+        // Advance to next season, ep 1
+        STATE.season++;
+        STATE.episode = 1;
+        const sel = document.getElementById('season-select');
+        if (sel) sel.value = STATE.season;
+        loadEpisodes();
+      }
     }
 
     async function loadEpisodes() {
       const epGrid = document.getElementById('ep-grid');
       if (!epGrid) return;
-      epGrid.innerHTML = '<div style="color:var(--grey);font-size:13px">Loading episodes…</div>';
+      epGrid.innerHTML = '<div style="color:var(--grey);font-size:13px;padding:8px">Loading episodes…</div>';
       try {
         const r = await fetch(`${TMDB_BASE}/tv/${STATE.tmdb}/season/${STATE.season}?api_key=${TMDB_KEY}`);
         const d = await r.json();
         const eps = d.episodes || [];
+        STATE.totalEpisodes = eps.length;
         epGrid.innerHTML = eps.map(ep =>
-          `<button class="ep-btn${ep.episode_number===STATE.episode?' active':''}" data-ep="${ep.episode_number}" onclick="selectEp(${ep.episode_number})" title="${ep.name||'Episode '+ep.episode_number}">${ep.episode_number}</button>`
+          `<button class="ep-btn${ep.episode_number===STATE.episode?' active':''}" data-ep="${ep.episode_number}" onclick="selectEp(${ep.episode_number})" title="${(ep.name||'Episode '+ep.episode_number).replace(/"/g,'&quot;')}">${ep.episode_number}</button>`
         ).join('');
+        // Scroll active ep into view
+        setTimeout(() => document.querySelector('.ep-btn.active')?.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+        updateNowPlayingLabel();
+        updateNextEpBtn();
         reloadPlayer();
-        document.getElementById('now-playing-label').textContent = `S${STATE.season} E${STATE.episode}`;
       } catch {
-        epGrid.innerHTML = `<div style="color:var(--grey);font-size:13px">Could not load episodes.</div>`;
+        epGrid.innerHTML = '<div style="color:var(--grey);font-size:13px;padding:8px">Could not load episodes.</div>';
       }
     }
 
-    function buildPlayerSection(title) {
+    // ── Build UI sections ──────────────────────────────────────────────────
+    function buildPlayerSection() {
       return `
         <div class="watch-player-section">
           <div class="watch-player-header">
-            <span class="watch-player-title">▶ PLAYING <span id="now-playing-label">${STATE.isTv ? `S${STATE.season} E${STATE.episode}` : title.toUpperCase()}</span></span>
+            <span class="watch-player-title">▶ PLAYING <span id="now-playing-label">${STATE.isTv ? `S${STATE.season} E${STATE.episode}` : STATE.title.toUpperCase()}</span></span>
             <div class="watch-controls">
+              ${STATE.isTv ? `
+              <button id="next-ep-btn" class="next-ep-btn" onclick="nextEpisode()" style="display:none">
+                Next Episode
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/><line x1="20" y1="6" x2="20" y2="18"/></svg>
+              </button>` : ''}
               <label class="watch-proxy-toggle" title="Route through proxy">
                 <input type="checkbox" id="proxy-cb" onchange="toggleProxy()" />
                 <span class="watch-proxy-box"></span>
@@ -435,27 +508,40 @@
               </select>
             </div>
           </div>
-          <div class="sep-label">Episodes</div>
+          <div class="sep-label">Episodes — click to jump</div>
           <div class="ep-grid" id="ep-grid">
-            <div style="color:var(--grey);font-size:13px">Loading…</div>
+            <div style="color:var(--grey);font-size:13px;padding:8px">Loading…</div>
           </div>
         </div>
       `;
     }
 
+    // ── Render full page ───────────────────────────────────────────────────
     function renderPage(data, isMovie) {
       const title     = isMovie ? (data.title || data.original_title) : (data.name || data.original_name);
+      STATE.title     = title;
       const year      = isMovie ? (data.release_date||'').split('-')[0] : (data.first_air_date||'').split('-')[0];
       const runtime   = isMovie ? (data.runtime ? `${Math.floor(data.runtime/60)}h ${data.runtime%60}m` : '') : (data.number_of_seasons ? `${data.number_of_seasons} season${data.number_of_seasons>1?'s':''}` : '');
       const rating    = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
       const genres    = (data.genres||[]).map(g=>g.name).join(', ') || 'N/A';
       const country   = isMovie ? (data.production_countries||[])[0]?.name : (data.origin_country||[])[0];
       const studio    = isMovie ? (data.production_companies||[])[0]?.name : (data.networks||[])[0]?.name;
-      const posterUrl = data.poster_path ? IMG_W500 + data.poster_path : '';
+      const posterUrl = data.poster_path   ? IMG_W500 + data.poster_path   : '';
       const backdropUrl = data.backdrop_path ? IMG_ORIG + data.backdrop_path : '';
       const imdbUrl   = isMovie && data.imdb_id ? `https://imdb.com/title/${data.imdb_id}` : '';
 
+      if (!isMovie) {
+        STATE.totalSeasons = (data.seasons||[]).filter(s=>s.season_number>0).length || 1;
+      }
+
       if (backdropUrl) document.getElementById('backdrop-img').src = backdropUrl;
+
+      // SEO dynamic title + description
+      document.title = `${title} — LUMIS`;
+      document.querySelector('meta[name="description"]')?.setAttribute('content', data.overview?.slice(0,160) || `Watch ${title} on LUMIS.`);
+
+      // Ticker
+      document.getElementById('ticker-text').innerHTML = `★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp; ★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp;`;
 
       // Save to history
       try {
@@ -463,26 +549,19 @@
         const type = STATE.isTv ? 'tv' : 'movie';
         const poster = data.poster_path ? 'https://image.tmdb.org/t/p/w342' + data.poster_path : '';
         const entry = { title, tmdbId: STATE.tmdb, posterUrl: poster, type, watchedAt: Date.now() };
-        const filtered = h.filter(i => i.tmdbId !== STATE.tmdb);
-        filtered.unshift(entry);
-        localStorage.setItem('lumis_history', JSON.stringify(filtered.slice(0, 50)));
+        localStorage.setItem('lumis_history', JSON.stringify([entry, ...h.filter(i=>i.tmdbId!==STATE.tmdb)].slice(0,50)));
       } catch {}
-      document.title = title + ' — LUMIS';
-      document.getElementById('ticker-text').innerHTML = `★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp; ★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp;`;
 
-      const badgeCls  = STATE.isTv ? (genres.toLowerCase().includes('anim') ? 'anime' : 'series') : 'movie';
-      const badgeLabel= STATE.isTv ? 'Series' : 'Movie';
+      const badgeCls   = STATE.isTv ? (genres.toLowerCase().includes('anim') ? 'anime' : 'series') : 'movie';
+      const badgeLabel = STATE.isTv ? 'Series' : 'Movie';
+      const seasons    = STATE.isTv ? (data.seasons||[]).filter(s=>s.season_number>0) : [];
+      STATE.seasons    = seasons;
 
-      const seasons = STATE.isTv ? (data.seasons||[]).filter(s=>s.season_number>0) : [];
-      STATE.seasons = seasons;
-
-      const content = document.getElementById('watch-content');
-      content.innerHTML = `
+      document.getElementById('watch-content').innerHTML = `
         <a class="watch-back" href="catalogue.html">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
           Back to Catalogue
         </a>
-
         <div class="watch-hero">
           <div class="watch-poster">
             ${posterUrl
@@ -491,44 +570,48 @@
             }
           </div>
           <div class="watch-meta">
-            <div class="watch-eyebrow">
-              <span class="watch-type-badge ${badgeCls}">${badgeLabel}</span>
-            </div>
+            <div class="watch-eyebrow"><span class="watch-type-badge ${badgeCls}">${badgeLabel}</span></div>
             <h1 class="watch-title">${title}</h1>
             <div class="watch-tags">
-              ${year ? `<span class="watch-tag">${year}</span>` : ''}
-              ${runtime ? `<span class="watch-tag">${runtime}</span>` : ''}
-              ${genres ? `<span class="watch-tag">${genres}</span>` : ''}
+              ${year     ? `<span class="watch-tag">${year}</span>`    : ''}
+              ${runtime  ? `<span class="watch-tag">${runtime}</span>` : ''}
+              ${genres   ? `<span class="watch-tag">${genres}</span>`  : ''}
             </div>
             <div class="watch-rating-big">★ ${rating}</div>
             ${data.tagline ? `<div class="watch-tagline">${data.tagline}</div>` : ''}
             <p class="watch-overview">${data.overview || 'No overview available.'}</p>
             <div class="watch-info-grid">
-              ${studio ? `<div class="watch-info-item"><strong>Studio:</strong> ${studio}</div>` : ''}
-              ${country ? `<div class="watch-info-item"><strong>Country:</strong> ${country}</div>` : ''}
-              ${imdbUrl ? `<div class="watch-info-item"><a href="${imdbUrl}" target="_blank" style="color:var(--gold);font-size:12px;font-weight:600;">View on IMDb ↗</a></div>` : ''}
+              ${studio   ? `<div class="watch-info-item"><strong>Studio:</strong> ${studio}</div>`   : ''}
+              ${country  ? `<div class="watch-info-item"><strong>Country:</strong> ${country}</div>` : ''}
+              ${imdbUrl  ? `<div class="watch-info-item"><a href="${imdbUrl}" target="_blank" style="color:var(--gold);font-size:12px;font-weight:600;">View on IMDb ↗</a></div>` : ''}
             </div>
           </div>
         </div>
-
-        ${buildPlayerSection(title)}
+        ${buildPlayerSection()}
         ${STATE.isTv ? buildSeasonPicker(seasons) : ''}
       `;
 
       if (STATE.isTv && seasons.length) {
+        // Sync season select to restored value
+        const sel = document.getElementById('season-select');
+        if (sel) sel.value = STATE.season;
         loadEpisodes();
       }
     }
 
+    // ── Init ───────────────────────────────────────────────────────────────
     async function init() {
       const params = new URLSearchParams(location.search);
-      STATE.tmdb  = params.get('tmdb') || '';
-      STATE.isTv  = params.get('tv') === '1';
+      STATE.tmdb = params.get('tmdb') || '';
+      STATE.isTv = params.get('tv') === '1';
 
       if (!STATE.tmdb) {
         document.getElementById('watch-content').innerHTML = '<p style="color:var(--grey);padding:40px">No title selected. <a href="catalogue.html" style="color:var(--gold)">Go to catalogue</a></p>';
         return;
       }
+
+      // Restore saved progress before fetching
+      loadProgress();
 
       const type = STATE.isTv ? 'tv' : 'movie';
       try {
@@ -536,13 +619,12 @@
         const d = await r.json();
         STATE.imdb = d.external_ids?.imdb_id || d.imdb_id || '';
         renderPage(d, !STATE.isTv);
-      } catch(e) {
+      } catch {
         document.getElementById('watch-content').innerHTML = '<p style="color:var(--grey);padding:40px">Failed to load title. <a href="catalogue.html" style="color:var(--gold)">Go back</a></p>';
       }
     }
 
     init();
-
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   </script>
   <script>

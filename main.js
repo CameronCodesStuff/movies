@@ -481,6 +481,99 @@ function showToast(message) {
   }, 2800);
 }
 
+async function loadSectionGrid(gridId, url, isTv) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+    grid.innerHTML = '';
+    (data.results || []).slice(0, 12).forEach(item => {
+      const card = createCard(item, isTv);
+      if (card) grid.appendChild(card);
+    });
+  } catch {
+    if (grid) grid.innerHTML = '';
+  }
+}
+
+function createCard(item, isTv) {
+  const title   = item.title || item.name || 'Unknown';
+  const year    = (item.release_date || item.first_air_date || '').split('-')[0];
+  const rating  = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+  const poster  = item.poster_path ? `${IMG_BASE}w342${item.poster_path}` : '';
+  const tmdbId  = item.id;
+  const safe    = title.replace(/'/g, "\'");
+
+  const article = document.createElement('article');
+  article.className = 'movie-card';
+  article.dataset.title = title;
+  article.dataset.year  = year;
+  article.dataset.tmdb  = tmdbId;
+  article.onclick = () => {
+    if (isTv) { window.location = `watch.html?tmdb=${tmdbId}&tv=1`; }
+    else       { openMovieByTmdb(tmdbId, title); }
+  };
+
+  article.innerHTML = `
+    <div class="card-poster">
+      ${poster ? `<img src="${poster}" alt="${title}" loading="lazy" onerror="this.parentElement.classList.add('no-image')" />` : ''}
+      <div class="card-poster-fallback">
+        <span class="fallback-icon">🎬</span>
+        <span class="fallback-title">${title.toUpperCase()}</span>
+      </div>
+      <div class="card-overlay">
+        <button class="card-play">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <div class="card-overlay-meta">
+          <span class="card-genre">${year}</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <h3 class="card-title">${title}</h3>
+      <div class="card-details">
+        <span class="card-rating">★ ${rating}</span>
+        <span class="card-runtime">${year}</span>
+      </div>
+    </div>
+  `;
+  return article;
+}
+
+function renderContinueWatching() {
+  try {
+    const history = JSON.parse(localStorage.getItem('lumis_history') || '[]');
+    const recent  = history.slice(0, 6);
+    const section = document.getElementById('continue-watching-section');
+    const grid    = document.getElementById('continue-watching-grid');
+    if (!section || !grid || !recent.length) return;
+
+    section.style.display = '';
+    grid.innerHTML = recent.map(item => {
+      const isTv   = item.type === 'tv';
+      const href   = `watch.html?tmdb=${item.tmdbId}${isTv ? '&tv=1' : ''}`;
+      const prog   = isTv ? (() => { try { const p = JSON.parse(localStorage.getItem('lumis_progress')||'{}'); return p[item.tmdbId] ? `S${p[item.tmdbId].season} E${p[item.tmdbId].episode}` : null; } catch { return null; } })() : null;
+      return `
+        <article class="movie-card cw-card" onclick="window.location='${href}'">
+          <div class="card-poster">
+            ${item.posterUrl ? `<img src="${item.posterUrl}" alt="${item.title}" loading="lazy" onerror="this.parentElement.classList.add('no-image')" />` : ''}
+            <div class="card-poster-fallback"><span class="fallback-icon">🎬</span><span class="fallback-title">${item.title.toUpperCase()}</span></div>
+            <div class="card-overlay">
+              <button class="card-play"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg></button>
+            </div>
+            ${prog ? `<div class="cw-progress-badge">${prog}</div>` : ''}
+          </div>
+          <div class="card-info">
+            <h3 class="card-title">${item.title}</h3>
+            <div class="card-details"><span class="card-rating" style="color:var(--grey);font-size:11px">${prog ? 'Resume ' + prog : 'Watch again'}</span></div>
+          </div>
+        </article>`;
+    }).join('');
+  } catch {}
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const heroContent = document.querySelector('.hero-content');
   if (heroContent) {
@@ -492,8 +585,11 @@ window.addEventListener('DOMContentLoaded', () => {
       heroContent.style.transform = 'translateY(0)';
     });
   }
+  renderContinueWatching();
   initHero();
   loadMovies(true);
+  loadSectionGrid('tv-grid',    `${TMDB_BASE}/tv/popular?api_key=${TMDB_KEY}&page=1`, true);
+  loadSectionGrid('anime-grid', `${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_genres=16&with_keywords=210024&sort_by=popularity.desc`, true);
 });
 
 function toggleMobileMenu() {

@@ -4,6 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LUMIS — Cinema On Demand</title>
+  <meta name="description" content="LUMIS is a luxury movie streaming site. Browse trending movies and TV shows, watch with multiple servers, and keep track of your history." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="LUMIS" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cameroncodesstuff.github.io/lumis/" />
+  <meta property="og:title" content="LUMIS — Cinema On Demand" />
+  <meta property="og:description" content="LUMIS is a luxury movie streaming site. Browse trending movies and TV shows, watch with multiple servers, and keep track of your history." />
+  <meta property="og:image" content="https://cameroncodesstuff.github.io/lumis/images/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LUMIS — Cinema On Demand" />
+  <meta name="twitter:description" content="LUMIS is a luxury movie streaming site. Browse trending movies and TV shows, watch with multiple servers, and keep track of your history." />
+  <meta name="twitter:image" content="https://cameroncodesstuff.github.io/lumis/images/logo.png" />
+  <link rel="canonical" href="https://cameroncodesstuff.github.io/lumis/" />
   <meta name="view-transition" content="same-origin" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#080808" />
@@ -105,6 +118,17 @@
   </section>
 
   <main class="main">
+
+    <!-- CONTINUE WATCHING -->
+    <section class="section" id="continue-watching-section" style="display:none;">
+      <div class="section-header">
+        <h2 class="section-title">Continue Watching</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="movies-grid continue-watching-grid" id="continue-watching-grid"></div>
+    </section>
+
+    <!-- TRENDING / SEARCH SECTION -->
     <section class="section" id="movies-section">
       <div class="section-header">
         <h2 class="section-title" id="section-title">Now Showing</h2>
@@ -128,6 +152,35 @@
       <div class="no-results" id="no-results" style="display:none;">No movies found.</div>
       <button class="load-more-btn" id="load-more-btn" style="display:none;" onclick="loadMoreMovies()">Load More</button>
     </section>
+
+    <!-- POPULAR TV SHOWS -->
+    <section class="section" id="tv-section">
+      <div class="section-header">
+        <h2 class="section-title">Popular TV Shows</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="movies-grid" id="tv-grid">
+        <div class="grid-loading">
+          <div class="loading-spinner"></div>
+          <span>Loading titles…</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANIME -->
+    <section class="section" id="anime-section">
+      <div class="section-header">
+        <h2 class="section-title">Anime</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="movies-grid" id="anime-grid">
+        <div class="grid-loading">
+          <div class="loading-spinner"></div>
+          <span>Loading titles…</span>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="footer">

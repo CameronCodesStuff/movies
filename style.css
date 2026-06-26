@@ -1283,3 +1283,49 @@ body {
     animation: none;
   }
 }
+
+.next-ep-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.next-ep-btn:hover {
+  background: var(--gold-light);
+  transform: translateY(-1px);
+}
+
+.cw-progress-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(201,168,76,0.9);
+  color: var(--black);
+  font-family: var(--font-caps);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  z-index: 3;
+  font-weight: 700;
+}
+
+.cw-card .card-poster::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--gold), var(--gold-light));
+  z-index: 4;
+}
