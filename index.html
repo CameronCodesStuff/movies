@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REEL — Cinema On Demand</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <span class="ticker-label">NOW SHOWING</span>
+      <div class="ticker-track">
+        <span>★ AVENGERS: ENDGAME &nbsp;&nbsp;·&nbsp;&nbsp; ★ THE LAST HOUR &nbsp;&nbsp;·&nbsp;&nbsp; ★ SHADOWFALL &nbsp;&nbsp;·&nbsp;&nbsp; ★ NEON REQUIEM &nbsp;&nbsp;·&nbsp;&nbsp; ★ AVENGERS: ENDGAME &nbsp;&nbsp;·&nbsp;&nbsp; ★ THE LAST HOUR &nbsp;&nbsp;·&nbsp;&nbsp; ★ SHADOWFALL &nbsp;&nbsp;·&nbsp;&nbsp; ★ NEON REQUIEM &nbsp;&nbsp;·&nbsp;&nbsp;</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-logo" onclick="scrollToTop()">
+      <span class="logo-reel">REEL</span>
+      <span class="logo-dot">●</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" class="active" id="nav-home" onclick="navHome(event)">Home</a></li>
+      <li><a href="#" id="nav-browse" onclick="navBrowse(event)">Browse</a></li>
+      <li><a href="#" id="nav-new" onclick="navNewReleases(event)">New Releases</a></li>
+      <li><a href="#" id="nav-mylist" onclick="navMyList(event)">My List</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="btn-search" aria-label="Search" onclick="toggleSearch()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="avatar" onclick="toggleMyListPanel()">C</div>
+    </div>
+  </nav>
+
+  <div class="search-bar-wrap" id="search-bar-wrap">
+    <input type="text" class="search-input" id="search-input" placeholder="Search movies…" oninput="filterMovies(this.value)" />
+    <button class="search-close" onclick="closeSearch()">✕</button>
+  </div>
+
+  <section class="hero" id="hero">
+    <div class="hero-backdrop">
+      <img src="images/featured.jpg" alt="Avengers Endgame backdrop" class="hero-bg" onerror="this.style.display='none'" />
+      <div class="hero-scanlines"></div>
+      <div class="hero-gradient"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="tag-featured">FEATURED FILM</span>
+        <span class="tag-rating">★ 8.4</span>
+      </div>
+      <h1 class="hero-title">Avengers:<br /><em>Endgame</em></h1>
+      <div class="hero-meta">
+        <span>2019</span>
+        <span class="dot">·</span>
+        <span>3h 1m</span>
+        <span class="dot">·</span>
+        <span>Action / Sci-Fi</span>
+        <span class="dot">·</span>
+        <span class="age-badge">PG-13</span>
+      </div>
+      <p class="hero-synopsis">
+        After the devastating events of Infinity War, the universe is in ruins. With the help of remaining allies, 
+        the Avengers assemble once more to reverse Thanos's actions and restore balance — whatever it takes.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="openMovie('movies/movie.html', 'Avengers: Endgame')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          Play Now
+        </button>
+        <button class="btn-secondary" onclick="toggleWatchlist(this)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>My List</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <span>Scroll</span>
+      <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><rect x="1" y="1" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="6" r="2" fill="currentColor" class="scroll-dot"/></svg>
+    </div>
+  </section>
+
+  <main class="main">
+    <section class="section" id="movies-section">
+      <div class="section-header">
+        <h2 class="section-title" id="section-title">Now Showing</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="movies-grid" id="movies-grid">
+        <article class="movie-card" data-title="Avengers: Endgame" data-year="2019" data-genre="Action" onclick="openMovie('movies/movie.html', 'Avengers: Endgame')">
+          <div class="card-poster">
+            <img src="images/poster.jpg" alt="Avengers: Endgame poster" onerror="this.parentElement.classList.add('no-image')" />
+            <div class="card-poster-fallback">
+              <span class="fallback-icon">🎬</span>
+              <span class="fallback-title">AVENGERS: ENDGAME</span>
+            </div>
+            <div class="card-overlay">
+              <button class="card-play">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </button>
+              <div class="card-overlay-meta">
+                <span class="card-genre">Action</span>
+                <span class="card-year">2019</span>
+              </div>
+            </div>
+            <div class="card-badge">NEW</div>
+          </div>
+          <div class="card-info">
+            <h3 class="card-title">Avengers: Endgame</h3>
+            <div class="card-details">
+              <span class="card-rating">★ 8.4</span>
+              <span class="card-runtime">3h 1m</span>
+            </div>
+            <p class="card-desc">Whatever it takes.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="no-results" id="no-results" style="display:none;">
+        <span>No movies found.</span>
+      </div>
+
+      <div class="coming-soon-hint" id="coming-soon-hint">
+        <div class="coming-soon-line"></div>
+        <span>More titles arriving soon</span>
+        <div class="coming-soon-line"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-logo">REEL<span>●</span></div>
+    <p class="footer-copy">© 2024 REEL Cinema On Demand. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+  <div class="modal" id="player-modal" aria-hidden="true">
+    <div class="modal-backdrop" onclick="closeMovie()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title"></span>
+        <button class="modal-close" onclick="closeMovie()" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-player">
+        <iframe id="movie-frame" src="" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="mylist-panel" id="mylist-panel">
+    <div class="mylist-header">
+      <span>My List</span>
+      <button onclick="toggleMyListPanel()">✕</button>
+    </div>
+    <ul class="mylist-items" id="mylist-items"></ul>
+    <p class="mylist-empty" id="mylist-empty">Your list is empty.</p>
+  </div>
+  <div class="mylist-overlay" id="mylist-overlay" onclick="toggleMyListPanel()"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>
