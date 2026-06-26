@@ -1,4 +1,4 @@
-const CACHE = 'lumis-v1';
+const CACHE = 'lumis-v2';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -8,7 +8,9 @@ const PRECACHE = [
   '/main.js',
   '/catalogue.js',
   '/images/logo.png',
-  '/images/endgame.jpg'
+  '/images/endgame.jpg',
+  '/history.html',
+  '/404.html'
 ];
 
 self.addEventListener('install', e => {

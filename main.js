@@ -151,6 +151,8 @@ async function openMovieByTmdb(tmdbId, title) {
     const res  = await fetch(`${TMDB_BASE}/movie/${tmdbId}?api_key=${TMDB_KEY}&append_to_response=external_ids`);
     const data = await res.json();
     const imdbId = data.external_ids?.imdb_id || '';
+    const poster = data.poster_path ? `https://image.tmdb.org/t/p/w342${data.poster_path}` : '';
+    saveToHistory(title, String(tmdbId), poster, 'movie');
     loadMovieIframe(imdbId, tmdbId);
   } catch {
     loadMovieIframe('', tmdbId);
@@ -493,3 +495,25 @@ window.addEventListener('DOMContentLoaded', () => {
   initHero();
   loadMovies(true);
 });
+
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+  document.getElementById('mobile-menu-overlay').classList.toggle('open');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobile-menu')?.classList.remove('open');
+  document.getElementById('mobile-menu-overlay')?.classList.remove('open');
+  document.getElementById('hamburger')?.classList.remove('open');
+}
+
+function saveToHistory(title, tmdbId, posterUrl, type) {
+  try {
+    const h = JSON.parse(localStorage.getItem('lumis_history') || '[]');
+    const entry = { title, tmdbId, posterUrl: posterUrl || '', type: type || 'movie', watchedAt: Date.now() };
+    const filtered = h.filter(i => i.tmdbId !== tmdbId);
+    filtered.unshift(entry);
+    localStorage.setItem('lumis_history', JSON.stringify(filtered.slice(0, 50)));
+  } catch {}
+}

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch History — LUMIS</title>
+  <meta name="view-transition" content="same-origin" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080808" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="images/logo.png" />
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <style>
+    .history-page {
+      padding-top: calc(var(--ticker-h) + var(--nav-h));
+      min-height: 100vh;
+    }
+
+    .history-hero {
+      padding: 48px 60px 36px;
+      border-bottom: 1px solid rgba(201,168,76,0.08);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .history-hero-left h1 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .history-hero-left h1 em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .history-hero-left p {
+      font-size: 14px;
+      color: var(--grey);
+    }
+
+    .history-clear-btn {
+      background: none;
+      border: 1px solid rgba(192,57,43,0.4);
+      color: #e74c3c;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .history-clear-btn:hover {
+      background: rgba(192,57,43,0.1);
+      border-color: #e74c3c;
+    }
+
+    .history-main { padding: 40px 60px 80px; }
+
+    .history-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 80px 20px;
+      color: var(--grey);
+      text-align: center;
+    }
+    .history-empty-icon { font-size: 56px; opacity: 0.4; }
+    .history-empty h2 { font-family: var(--font-display); font-size: 24px; color: var(--grey); font-weight: 700; }
+    .history-empty p { font-size: 14px; }
+    .history-empty a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    .history-empty a:hover { text-decoration: underline; }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .history-card {
+      background: var(--black-3);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+      position: relative;
+    }
+    .history-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.2);
+    }
+
+    .history-poster {
+      position: relative;
+      aspect-ratio: 2/3;
+      background: var(--black-4);
+      overflow: hidden;
+    }
+    .history-poster img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .history-card:hover .history-poster img { transform: scale(1.06); }
+
+    .history-poster-fallback {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #1a0808 0%, #080d1a 100%);
+    }
+    .history-poster-fallback .hfi { font-size: 36px; }
+    .history-poster-fallback .hft {
+      font-family: var(--font-caps); font-size: 11px;
+      letter-spacing: 0.1em; color: var(--gold);
+      text-align: center; padding: 0 8px;
+    }
+
+    .history-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, rgba(8,8,8,0.95) 100%);
+      opacity: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity var(--transition);
+    }
+    .history-card:hover .history-overlay { opacity: 1; }
+
+    .history-play {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: none; color: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding-left: 3px;
+      box-shadow: 0 0 24px rgba(201,168,76,0.5);
+    }
+
+    .history-type-badge {
+      position: absolute; top: 8px; right: 8px;
+      font-family: var(--font-caps); font-size: 9px;
+      letter-spacing: 0.08em; padding: 2px 6px;
+      border-radius: 2px; z-index: 2;
+    }
+    .history-type-badge.movie  { background: #C0392B; color: #fff; }
+    .history-type-badge.tv     { background: #1a4a8a; color: #fff; }
+
+    .history-remove {
+      position: absolute; top: 8px; left: 8px;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--grey); font-size: 13px;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; z-index: 3;
+    }
+    .history-card:hover .history-remove { display: flex; }
+    .history-remove:hover { background: rgba(192,57,43,0.8); color: #fff; border-color: transparent; }
+
+    .history-info { padding: 12px 14px; }
+
+    .history-title {
+      font-family: var(--font-display);
+      font-size: 13px; font-weight: 700;
+      color: var(--white); margin-bottom: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .history-time {
+      font-size: 11px; color: var(--grey);
+    }
+
+    .history-section-title {
+      font-family: var(--font-display);
+      font-size: 18px; font-weight: 700;
+      color: var(--white); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .history-section-title::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--gold-dim), transparent);
+    }
+
+    @media (max-width: 768px) {
+      .history-hero { padding: 32px 20px 24px; }
+      .history-main { padding: 28px 16px 60px; }
+      .history-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+    }
+    @media (max-width: 480px) {
+      .history-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <span class="ticker-label">HISTORY</span>
+      <div class="ticker-track">
+        <span>★ YOUR WATCH HISTORY &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp; ★ YOUR WATCH HISTORY &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp; ★ YOUR WATCH HISTORY &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp;</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav scrolled">
+    <div class="nav-logo" onclick="window.location='index.html'">
+      <img src="images/logo.png" alt="LUMIS" class="nav-logo-img" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="catalogue.html">Catalogue</a></li>
+      <li><a href="history.html" class="active">History</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">Home</a>
+    <a href="catalogue.html">Catalogue</a>
+    <a href="history.html">History</a>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <div class="history-page">
+    <div class="history-hero">
+      <div class="history-hero-left">
+        <h1>Watch <em>History</em></h1>
+        <p id="history-count">Loading…</p>
+      </div>
+      <button class="history-clear-btn" onclick="clearHistory()">Clear All</button>
+    </div>
+    <div class="history-main" id="history-main"></div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-logo-wrap">
+      <img src="images/logo.png" alt="LUMIS" class="footer-logo-img" />
+    </div>
+    <p class="footer-copy">© 2024 LUMIS Cinema On Demand. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="catalogue.html">Catalogue</a>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('mobile-menu-overlay').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.remove('open');
+      document.getElementById('mobile-menu-overlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem('lumis_history') || '[]'); }
+      catch { return []; }
+    }
+
+    function saveHistory(h) {
+      localStorage.setItem('lumis_history', JSON.stringify(h));
+    }
+
+    function removeEntry(tmdbId) {
+      saveHistory(getHistory().filter(i => i.tmdbId !== tmdbId));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (confirm('Clear your entire watch history?')) {
+        localStorage.removeItem('lumis_history');
+        renderHistory();
+      }
+    }
+
+    function goWatch(item) {
+      const tv = item.type === 'tv' ? '&tv=1' : '';
+      window.location = `watch.html?tmdb=${item.tmdbId}${tv}`;
+    }
+
+    function timeAgo(ts) {
+      const diff = Date.now() - ts;
+      const mins  = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days  = Math.floor(diff / 86400000);
+      if (mins < 1)   return 'Just now';
+      if (mins < 60)  return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7)   return `${days}d ago`;
+      return new Date(ts).toLocaleDateString('en-NZ', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    function groupByDate(items) {
+      const groups = { Today: [], 'This Week': [], Earlier: [] };
+      const now = Date.now();
+      items.forEach(item => {
+        const diff = now - item.watchedAt;
+        if (diff < 86400000)       groups['Today'].push(item);
+        else if (diff < 604800000) groups['This Week'].push(item);
+        else                        groups['Earlier'].push(item);
+      });
+      return groups;
+    }
+
+    function cardHTML(item, idx) {
+      const badge = item.type === 'tv' ? 'tv' : 'movie';
+      const label = item.type === 'tv' ? 'Series' : 'Movie';
+      return `
+        <div class="history-card" onclick="goWatch(${JSON.stringify(item).replace(/"/g,'&quot;')})">
+          <div class="history-poster">
+            ${item.posterUrl
+              ? `<img src="${item.posterUrl}" alt="${item.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />`
+              : ''}
+            <div class="history-poster-fallback" style="${item.posterUrl ? 'display:none' : ''}">
+              <span class="hfi">🎬</span>
+              <span class="hft">${item.title.toUpperCase()}</span>
+            </div>
+            <div class="history-overlay">
+              <button class="history-play">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </button>
+            </div>
+            <span class="history-type-badge ${badge}">${label}</span>
+            <button class="history-remove" onclick="event.stopPropagation();removeEntry('${item.tmdbId}')" title="Remove">✕</button>
+          </div>
+          <div class="history-info">
+            <div class="history-title">${item.title}</div>
+            <div class="history-time">${timeAgo(item.watchedAt)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      const main    = document.getElementById('history-main');
+      const count   = document.getElementById('history-count');
+
+      count.textContent = history.length
+        ? `${history.length} title${history.length !== 1 ? 's' : ''} watched`
+        : 'Nothing watched yet';
+
+      if (!history.length) {
+        main.innerHTML = `
+          <div class="history-empty">
+            <div class="history-empty-icon">🎬</div>
+            <h2>No history yet</h2>
+            <p>Titles you watch will appear here.</p>
+            <p><a href="catalogue.html">Browse the catalogue</a> to get started.</p>
+          </div>`;
+        return;
+      }
+
+      const groups = groupByDate(history);
+      let html = '';
+      for (const [label, items] of Object.entries(groups)) {
+        if (!items.length) continue;
+        html += `
+          <div class="history-section-title">${label}</div>
+          <div class="history-grid" style="margin-bottom:40px">
+            ${items.map(cardHTML).join('')}
+          </div>`;
+      }
+      main.innerHTML = html;
+    }
+
+    renderHistory();
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>

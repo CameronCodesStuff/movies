@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LUMIS — Cinema On Demand</title>
+  <meta name="view-transition" content="same-origin" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#080808" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -31,20 +32,33 @@
     <div class="nav-logo" onclick="scrollToTop()">
       <img src="images/logo.png" alt="LUMIS" class="nav-logo-img" />
     </div>
-    <ul class="nav-links">
+    <ul class="nav-links" id="nav-links">
       <li><a href="#" class="active" id="nav-home" onclick="navHome(event)">Home</a></li>
       <li><a href="#" id="nav-browse" onclick="navBrowse(event)">Browse</a></li>
       <li><a href="#" id="nav-new" onclick="navNewReleases(event)">New Releases</a></li>
       <li><a href="#" id="nav-mylist" onclick="navMyList(event)">My List</a></li>
       <li><a href="catalogue.html">Catalogue</a></li>
+      <li><a href="history.html">History</a></li>
     </ul>
     <div class="nav-right">
       <button class="btn-search" aria-label="Search" onclick="toggleSearch()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
       <div class="avatar" onclick="toggleMyListPanel()">C</div>
+      <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#" onclick="navHome(event);closeMobileMenu()">Home</a>
+    <a href="#" onclick="navBrowse(event);closeMobileMenu()">Browse</a>
+    <a href="#" onclick="navNewReleases(event);closeMobileMenu()">New Releases</a>
+    <a href="#" onclick="navMyList(event);closeMobileMenu()">My List</a>
+    <a href="catalogue.html">Catalogue</a>
+    <a href="history.html">History</a>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
 
   <div class="search-bar-wrap" id="search-bar-wrap">
     <input type="text" class="search-input" id="search-input" placeholder="Search movies…" oninput="onSearchInput(this.value)" />
@@ -144,7 +158,7 @@
         <button class="modal-close" onclick="closeMovie()">✕</button>
       </div>
       <div class="modal-player">
-        <iframe id="movie-frame" src="" allowfullscreen></iframe>
+        <iframe id="movie-frame" src="" allowfullscreen allow="autoplay; encrypted-media; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>
       </div>
     </div>
   </div>

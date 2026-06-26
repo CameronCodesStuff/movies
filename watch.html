@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Watch — LUMIS</title>
+  <meta name="view-transition" content="same-origin" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#080808" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -291,11 +292,21 @@
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="catalogue.html">Catalogue</a></li>
+      <li><a href="history.html">History</a></li>
     </ul>
     <div class="nav-right">
       <div class="avatar" onclick="window.location='index.html'">C</div>
+      <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">Home</a>
+    <a href="catalogue.html">Catalogue</a>
+    <a href="history.html">History</a>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
 
   <div class="watch-backdrop">
     <img id="backdrop-img" src="" alt="" />
@@ -445,6 +456,17 @@
       const imdbUrl   = isMovie && data.imdb_id ? `https://imdb.com/title/${data.imdb_id}` : '';
 
       if (backdropUrl) document.getElementById('backdrop-img').src = backdropUrl;
+
+      // Save to history
+      try {
+        const h = JSON.parse(localStorage.getItem('lumis_history') || '[]');
+        const type = STATE.isTv ? 'tv' : 'movie';
+        const poster = data.poster_path ? 'https://image.tmdb.org/t/p/w342' + data.poster_path : '';
+        const entry = { title, tmdbId: STATE.tmdb, posterUrl: poster, type, watchedAt: Date.now() };
+        const filtered = h.filter(i => i.tmdbId !== STATE.tmdb);
+        filtered.unshift(entry);
+        localStorage.setItem('lumis_history', JSON.stringify(filtered.slice(0, 50)));
+      } catch {}
       document.title = title + ' — LUMIS';
       document.getElementById('ticker-text').innerHTML = `★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp; ★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp;`;
 
@@ -522,6 +544,18 @@
     init();
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <script>
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('mobile-menu-overlay').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.remove('open');
+      document.getElementById('mobile-menu-overlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
   </script>
 </body>
 </html>
