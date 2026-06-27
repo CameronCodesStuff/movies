@@ -205,8 +205,10 @@ function lumisToast(msg) {
 }
 
 const ANIME_SOURCES = [
-  { name: 'AutoEmbed', url: (id, ep) => `https://autoembed.cc/anime/anilist/${id}-${ep}` },
-  { name: 'VidBinge',  url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}` },
+  { name: 'HiAnime',   url: (id, ep) => `https://embed.aniwave.to/e?id=${id}&ep=${ep}` },
   { name: 'VidLink',   url: (id, ep) => `https://vidlink.pro/anime/${id}/${ep}` },
+  { name: 'VidBinge',  url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}` },
   { name: 'VidSrc',    url: (id, ep) => `https://vidsrc.dev/embed/anime?anilist=${id}&episode=${ep}` },
+  { name: 'AnimeOwl',  url: (id, ep) => `https://animeowl.me/embed/${id}/${ep}` },
+  { name: 'AutoEmbed', url: (id, ep) => `https://autoembed.cc/anime/anilist/${id}-${ep}` },
 ];
