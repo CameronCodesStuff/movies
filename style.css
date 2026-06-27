@@ -1257,7 +1257,7 @@ body {
 /* ============================================
    VIEW TRANSITIONS — CINEMATIC
    ============================================ */
-@view-transition { navigation: auto; }
+/* view-transition handled per-page via meta tag */
 
 /* Default cross-fade with scale */
 ::view-transition-old(root) {

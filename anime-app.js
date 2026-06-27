@@ -205,8 +205,8 @@ function lumisToast(msg) {
 }
 
 const ANIME_SOURCES = [
+  { name: 'Animetsu',  url: (id, ep) => `https://animetsu.cc/watch?id=${id}&ep=${ep}` },
   { name: 'VidSrc',    url: (id, ep) => `https://vidsrc.dev/embed/anime?anilist=${id}&episode=${ep}` },
   { name: 'VidBinge',  url: (id, ep) => `https://vidbinge.dev/embed/anime/${id}/${ep}` },
   { name: 'AutoEmbed', url: (id, ep) => `https://autoembed.cc/anime/anilist/${id}-${ep}` },
-  { name: 'VidLink',   url: (id, ep) => `https://vidlink.pro/anime/${id}/${ep}` },
 ];
