@@ -52,9 +52,7 @@
 
       <!-- MAIN -->
       <div class="anime-watch-main">
-        <div class="anime-player-wrap">
-          <iframe id="player-frame" src="" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
-        </div>
+        <div class="anime-player-wrap" id="player-box"></div>
 
         <div class="anime-ctrl-bar">
           <div class="anime-ctrl-title" id="ctrl-title">Loading…</div>
@@ -127,9 +125,15 @@
     function loadFrame(idx) {
       srcIdx = idx;
       document.querySelectorAll('.anime-src-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
-      const frame = document.getElementById('player-frame');
-      frame.src = '';
-      setTimeout(() => { frame.src = ANIME_SOURCES[idx].url(animeId, curEp); }, 80);
+      const box = document.getElementById('player-box');
+      const existing = box.querySelector('iframe');
+      if (existing) existing.remove();
+      const f = document.createElement('iframe');
+      f.src = ANIME_SOURCES[idx].url(animeId, curEp);
+      f.allowFullscreen = true;
+      f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
+      f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+      box.appendChild(f);
     }
 
     function goEp(ep) {
@@ -161,8 +165,8 @@
     document.getElementById('next-btn').addEventListener('click',  () => goEp(curEp+1));
     document.getElementById('retry-btn').addEventListener('click', () => loadFrame(srcIdx));
     document.getElementById('fs-btn').addEventListener('click', () => {
-      const wrap = document.querySelector('.anime-player-wrap');
-      (wrap.requestFullscreen||wrap.webkitRequestFullscreen||wrap.mozRequestFullScreen).call(wrap);
+      const box = document.getElementById('player-box');
+      (box.requestFullscreen||box.webkitRequestFullscreen||box.mozRequestFullScreen).call(box);
     });
 
     function buildSidebar(total) {
