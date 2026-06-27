@@ -211,9 +211,10 @@
       const box = document.getElementById('player-box');
       box.querySelector('iframe')?.remove();
       const f = document.createElement('iframe');
-      f.src = ANIME_SOURCES[idx].url(animeId, curEp);
+      const title = animeData ? (animeData.title.english || animeData.title.romaji) : '';
+      f.src = ANIME_SOURCES[idx].url(animeId, curEp, title);
       f.allowFullscreen = true;
-      f.allow = 'autoplay; picture-in-picture; encrypted-media';
+      f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
       box.appendChild(f);
     }
 
