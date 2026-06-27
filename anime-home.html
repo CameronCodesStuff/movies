@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="view-transition" content="same-origin" />
+  <title>Anime — LUMIS</title>
+  <meta name="description" content="Browse trending anime, top rated series and movies on LUMIS — powered by AniList." />
+  <meta property="og:title" content="Anime — LUMIS" />
+  <meta property="og:description" content="Browse trending anime on LUMIS." />
+  <meta property="og:image" content="https://cameroncodesstuff.github.io/lumis/images/logo.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080808" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="apple-touch-icon" href="images/logo.png" />
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="anime.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <span class="ticker-label">ANIME</span>
+      <div class="ticker-track"><span id="anime-ticker">★ ATTACK ON TITAN &nbsp;·&nbsp; ★ DEMON SLAYER &nbsp;·&nbsp; ★ ONE PIECE &nbsp;·&nbsp; ★ DEATH NOTE &nbsp;·&nbsp; ★ FULLMETAL ALCHEMIST &nbsp;·&nbsp; ★ ATTACK ON TITAN &nbsp;·&nbsp; ★ DEMON SLAYER &nbsp;·&nbsp; ★ ONE PIECE &nbsp;·&nbsp; ★ DEATH NOTE &nbsp;·&nbsp; ★ FULLMETAL ALCHEMIST &nbsp;·&nbsp;</span></div>
+    </div>
+  </div>
+
+  <nav class="nav scrolled">
+    <div class="nav-logo" onclick="window.location='index.html'">
+      <img src="images/logo.png" alt="LUMIS" class="nav-logo-img" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="anime-home.html" class="active">Anime</a></li>
+      <li><a href="catalogue.html">Catalogue</a></li>
+      <li><a href="history.html">History</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">Home</a>
+    <a href="anime-home.html">Anime</a>
+    <a href="catalogue.html">Catalogue</a>
+    <a href="history.html">History</a>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <div class="anime-page">
+
+    <!-- HERO -->
+    <div class="anime-hero" id="anime-hero">
+      <div class="anime-hero-slides" id="hero-slides"></div>
+      <div class="anime-hero-grad"></div>
+      <div class="anime-hero-scanlines"></div>
+      <div class="anime-hero-content" id="hero-content">
+        <div class="anime-hero-eyebrow">
+          <span class="anime-hero-badge">FEATURED ANIME</span>
+          <span class="anime-hero-score" id="hero-score"></span>
+        </div>
+        <h1 class="anime-hero-title" id="hero-title">Loading…</h1>
+        <div class="anime-hero-meta" id="hero-meta"></div>
+        <div class="anime-hero-genres" id="hero-genres"></div>
+        <p class="anime-hero-desc" id="hero-desc"></p>
+        <div class="anime-hero-actions">
+          <button class="btn-primary" id="hero-watch-btn" onclick="">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Watch Now
+          </button>
+          <button class="btn-secondary" id="hero-list-btn">
+            <span>My List</span>
+          </button>
+        </div>
+      </div>
+      <div class="anime-hero-dots" id="hero-dots"></div>
+    </div>
+
+    <!-- GENRE BAR -->
+    <div class="anime-genre-bar" id="genre-bar">
+      <button class="anime-genre-tab active" data-genre="" onclick="switchGenre(this,'')">All</button>
+      <button class="anime-genre-tab" data-genre="Action" onclick="switchGenre(this,'Action')">Action</button>
+      <button class="anime-genre-tab" data-genre="Adventure" onclick="switchGenre(this,'Adventure')">Adventure</button>
+      <button class="anime-genre-tab" data-genre="Comedy" onclick="switchGenre(this,'Comedy')">Comedy</button>
+      <button class="anime-genre-tab" data-genre="Drama" onclick="switchGenre(this,'Drama')">Drama</button>
+      <button class="anime-genre-tab" data-genre="Fantasy" onclick="switchGenre(this,'Fantasy')">Fantasy</button>
+      <button class="anime-genre-tab" data-genre="Horror" onclick="switchGenre(this,'Horror')">Horror</button>
+      <button class="anime-genre-tab" data-genre="Mystery" onclick="switchGenre(this,'Mystery')">Mystery</button>
+      <button class="anime-genre-tab" data-genre="Romance" onclick="switchGenre(this,'Romance')">Romance</button>
+      <button class="anime-genre-tab" data-genre="Sci-Fi" onclick="switchGenre(this,'Sci-Fi')">Sci-Fi</button>
+      <button class="anime-genre-tab" data-genre="Slice of Life" onclick="switchGenre(this,'Slice of Life')">Slice of Life</button>
+      <button class="anime-genre-tab" data-genre="Sports" onclick="switchGenre(this,'Sports')">Sports</button>
+      <button class="anime-genre-tab" data-genre="Supernatural" onclick="switchGenre(this,'Supernatural')">Supernatural</button>
+      <button class="anime-genre-tab" data-genre="Thriller" onclick="switchGenre(this,'Thriller')">Thriller</button>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="anime-search-wrap">
+      <input type="text" class="anime-search-input" id="anime-search" placeholder="Search anime…" oninput="onAnimeSearch(this.value)" />
+    </div>
+
+    <!-- TRENDING -->
+    <section class="anime-section" id="trending-section" style="margin-top:32px">
+      <div class="anime-section-header">
+        <h2 class="anime-section-title" id="main-section-title">Trending Now</h2>
+        <div class="anime-section-line"></div>
+      </div>
+      <div class="anime-grid" id="main-grid"></div>
+      <div class="anime-no-results" id="no-results" style="display:none">No anime found.</div>
+    </section>
+
+    <!-- TOP RATED -->
+    <section class="anime-section" id="top-rated-section">
+      <div class="anime-section-header">
+        <h2 class="anime-section-title">Top Rated</h2>
+        <div class="anime-section-line"></div>
+      </div>
+      <div class="anime-scroll-row" id="top-rated-grid"></div>
+    </section>
+
+    <!-- NEW RELEASES -->
+    <section class="anime-section" id="new-section">
+      <div class="anime-section-header">
+        <h2 class="anime-section-title">New Releases</h2>
+        <div class="anime-section-line"></div>
+      </div>
+      <div class="anime-scroll-row" id="new-grid"></div>
+    </section>
+
+    <!-- MOVIES -->
+    <section class="anime-section" id="movies-section">
+      <div class="anime-section-header">
+        <h2 class="anime-section-title">Anime Movies</h2>
+        <div class="anime-section-line"></div>
+      </div>
+      <div class="anime-scroll-row" id="movies-grid"></div>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    <div class="footer-logo-wrap"><img src="images/logo.png" alt="LUMIS" class="footer-logo-img" /></div>
+    <p class="footer-copy">© 2024 LUMIS. Anime data provided by AniList.</p>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="index.html">Home</a>
+    </div>
+  </footer>
+
+  <script src="anime-app.js"></script>
+  <script>
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('mobile-menu-overlay').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.remove('open');
+      document.getElementById('mobile-menu-overlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    let HERO_DATA = [], HERO_IDX = 0, HERO_TIMER = null;
+    let CURRENT_HERO_ANIME = null;
+
+    function buildHero(items) {
+      HERO_DATA = items.slice(0, 5);
+      const slides = document.getElementById('hero-slides');
+      const dots   = document.getElementById('hero-dots');
+      slides.innerHTML = HERO_DATA.map((a, i) => {
+        const bg = a.bannerImage || a.coverImage?.extraLarge || '';
+        return `<div class="anime-hero-slide${i===0?' active':''}" style="background-image:url('${bg}')"></div>`;
+      }).join('');
+      dots.innerHTML = HERO_DATA.map((_, i) =>
+        `<button class="anime-hero-dot${i===0?' active':''}" onclick="goHeroSlide(${i})"></button>`
+      ).join('');
+      showHeroSlide(0);
+      HERO_TIMER = setInterval(() => showHeroSlide((HERO_IDX+1) % HERO_DATA.length), 8000);
+    }
+
+    function showHeroSlide(idx) {
+      HERO_IDX = idx;
+      const a = HERO_DATA[idx];
+      if (!a) return;
+      CURRENT_HERO_ANIME = a;
+
+      document.querySelectorAll('.anime-hero-slide').forEach((el,i) => el.classList.toggle('active', i===idx));
+      document.querySelectorAll('.anime-hero-dot').forEach((el,i)  => el.classList.toggle('active', i===idx));
+
+      const title  = a.title.english || a.title.romaji;
+      const words  = title.split(' ');
+      const first  = words.slice(0,-1).join(' ');
+      const last   = words[words.length-1];
+
+      const content = document.getElementById('hero-content');
+      content.style.opacity = '0';
+      content.style.transform = 'translateY(6px)';
+      setTimeout(() => {
+        document.getElementById('hero-title').innerHTML = first ? `${first}<br><em>${last}</em>` : `<em>${last}</em>`;
+        document.getElementById('hero-score').textContent = a.averageScore ? `★ ${(a.averageScore/10).toFixed(1)}` : '';
+        document.getElementById('hero-meta').innerHTML = [
+          a.seasonYear, a.episodes ? a.episodes+' ep' : null,
+          afmt.status(a.status)
+        ].filter(Boolean).map((s,i,arr) => i<arr.length-1 ? `${s}<span class="dot"> · </span>` : s).join('');
+        document.getElementById('hero-genres').innerHTML = (a.genres||[]).slice(0,4).map(g =>
+          `<span class="anime-genre-chip" onclick="switchGenre(null,'${g}')">${g}</span>`
+        ).join('');
+        document.getElementById('hero-desc').textContent = afmt.plain(a.description||'').slice(0,200) + (a.description?.length > 200 ? '…' : '');
+        document.getElementById('hero-watch-btn').onclick = () => AP.go('anime-detail.html', {id: a.id});
+        updateHeroListBtn(a);
+        content.style.opacity = '1';
+        content.style.transform = 'translateY(0)';
+        content.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+      }, 200);
+
+      document.getElementById('anime-ticker').innerHTML = `★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS ANIME &nbsp;·&nbsp; ★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS ANIME &nbsp;·&nbsp;`;
+    }
+
+    function goHeroSlide(idx) {
+      clearInterval(HERO_TIMER);
+      showHeroSlide(idx);
+      HERO_TIMER = setInterval(() => showHeroSlide((HERO_IDX+1) % HERO_DATA.length), 8000);
+    }
+
+    function updateHeroListBtn(a) {
+      const btn = document.getElementById('hero-list-btn');
+      const saved = AS.inWatchlist(a.id);
+      btn.innerHTML = `<span>${saved ? '♥ Added' : '♡ My List'}</span>`;
+      btn.className = 'btn-secondary' + (saved ? ' added' : '');
+      btn.onclick = () => {
+        AS.toggleWatchlist(a);
+        updateHeroListBtn(a);
+        lumisToast(AS.inWatchlist(a.id) ? `"${a.title.english||a.title.romaji}" added to list` : 'Removed from list');
+      };
+    }
+
+    function loadGrid(gridId, items) {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
+      grid.innerHTML = '';
+      items.forEach(a => grid.appendChild(animeCard(a)));
+    }
+
+    let searchTimer;
+    function onAnimeSearch(val) {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(async () => {
+        const q = val.trim();
+        const titleEl = document.getElementById('main-section-title');
+        const noRes   = document.getElementById('no-results');
+        const sections = ['top-rated-section','new-section','movies-section'];
+
+        if (!q) {
+          titleEl.textContent = 'Trending Now';
+          noRes.style.display = 'none';
+          sections.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+          loadMainSection();
+          return;
+        }
+
+        sections.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        titleEl.textContent = `Results for "${q}"`;
+        animeSkel(document.getElementById('main-grid'), 12);
+        try {
+          const d = await gql(Q.search, { s: q, p: 1 });
+          const items = d.Page.media;
+          noRes.style.display = items.length ? 'none' : '';
+          loadGrid('main-grid', items);
+        } catch { noRes.style.display = ''; document.getElementById('main-grid').innerHTML = ''; }
+      }, 350);
+    }
+
+    let currentGenre = '';
+    function switchGenre(btn, genre) {
+      currentGenre = genre;
+      document.querySelectorAll('.anime-genre-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      else {
+        const match = document.querySelector(`.anime-genre-tab[data-genre="${genre}"]`);
+        if (match) match.classList.add('active');
+      }
+      document.getElementById('anime-search').value = '';
+      loadMainSection();
+    }
+
+    async function loadMainSection() {
+      const grid    = document.getElementById('main-grid');
+      const titleEl = document.getElementById('main-section-title');
+      animeSkel(grid, 12);
+      try {
+        let items;
+        if (currentGenre) {
+          titleEl.textContent = currentGenre;
+          const d = await gql(Q.genre, { g: currentGenre, p: 1 });
+          items = d.Page.media;
+        } else {
+          titleEl.textContent = 'Trending Now';
+          const d = await gql(Q.trending);
+          items = d.Page.media;
+        }
+        loadGrid('main-grid', items);
+      } catch (e) { grid.innerHTML = `<p class="anime-no-results">Failed to load — ${e.message}</p>`; }
+    }
+
+    async function init() {
+      // Hero + trending in parallel
+      const [trendData, topData, newData, moviesData] = await Promise.all([
+        gql(Q.trending),
+        gql(Q.topRated),
+        gql(Q.newReleases),
+        gql(Q.movies),
+      ]);
+
+      buildHero(trendData.Page.media);
+      loadGrid('main-grid', trendData.Page.media);
+      loadGrid('top-rated-grid', topData.Page.media);
+      loadGrid('new-grid', newData.Page.media);
+      loadGrid('movies-grid', moviesData.Page.media);
+    }
+
+    // Skeleton placeholders while loading
+    animeSkel(document.getElementById('main-grid'), 12);
+    animeSkel(document.getElementById('top-rated-grid'), 8);
+    animeSkel(document.getElementById('new-grid'), 8);
+    animeSkel(document.getElementById('movies-grid'), 8);
+
+    init().catch(e => console.error('[anime-home]', e));
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>

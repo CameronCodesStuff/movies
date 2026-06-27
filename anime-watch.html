@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="view-transition" content="same-origin" />
+  <title>Watching — LUMIS Anime</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080808" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="apple-touch-icon" href="images/logo.png" />
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="anime.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <span class="ticker-label">WATCHING</span>
+      <div class="ticker-track"><span id="ticker-text">★ LUMIS ANIME &nbsp;·&nbsp; NOW WATCHING &nbsp;·&nbsp; ★ LUMIS ANIME &nbsp;·&nbsp; NOW WATCHING &nbsp;·&nbsp;</span></div>
+    </div>
+  </div>
+
+  <nav class="nav scrolled">
+    <div class="nav-logo" onclick="window.location='index.html'">
+      <img src="images/logo.png" alt="LUMIS" class="nav-logo-img" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="anime-home.html">Anime</a></li>
+      <li><a href="#" id="back-link">← Back</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">Home</a>
+    <a href="anime-home.html">Anime</a>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <div class="anime-watch-page">
+    <div class="anime-watch-layout">
+
+      <!-- MAIN -->
+      <div class="anime-watch-main">
+        <div class="anime-player-wrap">
+          <iframe id="player-frame" src="" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <div class="anime-ctrl-bar">
+          <div class="anime-ctrl-title" id="ctrl-title">Loading…</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-secondary" id="prev-btn" style="padding:6px 14px;font-size:12px" disabled>← Prev</button>
+            <button class="btn-secondary" id="next-btn" style="padding:6px 14px;font-size:12px" disabled>Next →</button>
+            <button class="btn-secondary" id="retry-btn" style="padding:6px 14px;font-size:12px" title="Reload">↺ Retry</button>
+            <button class="btn-primary" id="fs-btn" style="padding:6px 14px;font-size:12px">⛶ Fullscreen</button>
+          </div>
+        </div>
+
+        <div class="anime-src-bar">
+          <span>Source:</span>
+          <div id="src-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+
+        <div class="anime-hint">
+          ⟐ If video doesn't load, switch source above or hit ↺ Retry. Some sources work better for specific anime.
+        </div>
+      </div>
+
+      <!-- EPISODE SIDEBAR -->
+      <div class="anime-ep-sidebar">
+        <div class="anime-ep-sidebar-head">
+          <span>Episodes</span>
+          <span class="anime-ep-sidebar-count" id="ep-count">—</span>
+        </div>
+        <div class="anime-ep-list" id="ep-list">
+          <div style="padding:24px;text-align:center;color:var(--grey);font-size:13px">Loading…</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="anime-app.js"></script>
+  <script>
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('mobile-menu-overlay').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.remove('open');
+      document.getElementById('mobile-menu-overlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    let animeId   = parseInt(AP.get('id'));
+    let curEp     = parseInt(AP.get('ep')) || 1;
+    let totalEps  = 0;
+    let animeData = null;
+    let srcIdx    = 0;
+
+    if (!animeId) location.href = 'anime-home.html';
+    document.getElementById('back-link').href = `anime-detail.html?id=${animeId}`;
+
+    function buildSrcBtns() {
+      const row = document.getElementById('src-btns');
+      row.innerHTML = '';
+      ANIME_SOURCES.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.className = `anime-src-btn${i===srcIdx?' active':''}`;
+        b.textContent = s.name;
+        b.addEventListener('click', () => { srcIdx = i; loadFrame(i); });
+        row.appendChild(b);
+      });
+    }
+
+    function loadFrame(idx) {
+      srcIdx = idx;
+      document.querySelectorAll('.anime-src-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+      const frame = document.getElementById('player-frame');
+      frame.src = '';
+      setTimeout(() => { frame.src = ANIME_SOURCES[idx].url(animeId, curEp); }, 80);
+    }
+
+    function goEp(ep) {
+      if (ep < 1 || (totalEps > 0 && ep > totalEps)) return;
+      curEp = ep;
+      history.replaceState({}, '', `?id=${animeId}&ep=${ep}`);
+      updateNav();
+      updateTitle();
+      highlightSidebar();
+      loadFrame(srcIdx);
+      AS.saveProgress(animeId, ep);
+      if (animeData) AS.pushHistory(animeData, ep);
+    }
+
+    function updateNav() {
+      document.getElementById('prev-btn').disabled = curEp <= 1;
+      document.getElementById('next-btn').disabled = totalEps > 0 && curEp >= totalEps;
+    }
+
+    function updateTitle() {
+      if (!animeData) return;
+      const t = animeData.title.english || animeData.title.romaji;
+      document.getElementById('ctrl-title').textContent = `${t} · Episode ${curEp}`;
+      document.title = `Ep ${curEp} — ${t} — LUMIS Anime`;
+      document.getElementById('ticker-text').innerHTML = `★ ${t.toUpperCase()} EP ${curEp} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp; ★ ${t.toUpperCase()} EP ${curEp} &nbsp;·&nbsp; LUMIS &nbsp;·&nbsp;`;
+    }
+
+    document.getElementById('prev-btn').addEventListener('click',  () => goEp(curEp-1));
+    document.getElementById('next-btn').addEventListener('click',  () => goEp(curEp+1));
+    document.getElementById('retry-btn').addEventListener('click', () => loadFrame(srcIdx));
+    document.getElementById('fs-btn').addEventListener('click', () => {
+      const wrap = document.querySelector('.anime-player-wrap');
+      (wrap.requestFullscreen||wrap.webkitRequestFullscreen||wrap.mozRequestFullScreen).call(wrap);
+    });
+
+    function buildSidebar(total) {
+      const prog = AS.progress(animeId);
+      const done = prog.eps || [];
+      const list = document.getElementById('ep-list');
+      document.getElementById('ep-count').textContent = `${total} ep`;
+      list.innerHTML = '';
+      for (let i = 1; i <= total; i++) {
+        const row = document.createElement('div');
+        row.className = `anime-ep-row${i===curEp?' on':''}`;
+        row.dataset.ep = i;
+        row.innerHTML = `
+          <div class="anime-ep-num">${i}</div>
+          <div>
+            <div class="anime-ep-label">Episode ${i}</div>
+            <div class="anime-ep-sub">${done.includes(i)?'✓ Watched':''}</div>
+          </div>`;
+        row.addEventListener('click', () => goEp(i));
+        list.appendChild(row);
+      }
+      setTimeout(() => {
+        const active = document.querySelector('.anime-ep-row.on');
+        if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 150);
+    }
+
+    function highlightSidebar() {
+      document.querySelectorAll('.anime-ep-row').forEach(r => r.classList.toggle('on', parseInt(r.dataset.ep)===curEp));
+      const a = document.querySelector('.anime-ep-row.on');
+      if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    async function init() {
+      const data = await gql(Q.detail, { id: animeId });
+      animeData  = data.Media;
+      totalEps   = animeData.episodes || (animeData.nextAiringEpisode ? animeData.nextAiringEpisode.episode - 1 : 50);
+      if (curEp < 1) curEp = 1;
+      if (totalEps && curEp > totalEps) curEp = totalEps;
+
+      buildSrcBtns();
+      updateNav();
+      updateTitle();
+      buildSidebar(totalEps);
+      loadFrame(srcIdx);
+      AS.saveProgress(animeId, curEp);
+      AS.pushHistory(animeData, curEp);
+    }
+
+    init().catch(e => {
+      console.error(e);
+      document.getElementById('ctrl-title').textContent = '⚠ Failed to load — check your connection';
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>

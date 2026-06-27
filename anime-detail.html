@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="view-transition" content="same-origin" />
+  <title>Anime — LUMIS</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080808" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="apple-touch-icon" href="images/logo.png" />
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="anime.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <span class="ticker-label">ANIME</span>
+      <div class="ticker-track"><span id="ticker-text">★ LUMIS ANIME &nbsp;·&nbsp; LOADING &nbsp;·&nbsp; ★ LUMIS ANIME &nbsp;·&nbsp; LOADING &nbsp;·&nbsp;</span></div>
+    </div>
+  </div>
+
+  <nav class="nav scrolled">
+    <div class="nav-logo" onclick="window.location='index.html'">
+      <img src="images/logo.png" alt="LUMIS" class="nav-logo-img" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="anime-home.html" class="active">Anime</a></li>
+      <li><a href="catalogue.html">Catalogue</a></li>
+      <li><a href="history.html">History</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">Home</a>
+    <a href="anime-home.html">Anime</a>
+    <a href="catalogue.html">Catalogue</a>
+    <a href="history.html">History</a>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <div class="anime-detail-page">
+
+    <div class="anime-banner" id="anime-banner">
+      <div style="width:100%;height:100%;background:var(--black-2)" id="banner-inner"></div>
+      <div class="anime-banner-grad"></div>
+    </div>
+
+    <div class="anime-detail-content">
+      <div class="anime-detail-head" id="detail-head">
+        <div class="anime-detail-poster ac-skel" style="height:300px"></div>
+        <div style="padding-top:88px">
+          <div class="ac-skel" style="height:36px;width:60%;border-radius:6px;margin-bottom:10px"></div>
+          <div class="ac-skel" style="height:18px;width:40%;border-radius:6px"></div>
+        </div>
+      </div>
+
+      <div class="anime-detail-body" id="detail-body" style="display:none">
+        <div id="main-col"></div>
+        <div id="side-col"></div>
+      </div>
+
+      <div id="recs-wrap"></div>
+    </div>
+  </div>
+
+  <footer class="footer" style="margin-top:40px">
+    <div class="footer-logo-wrap"><img src="images/logo.png" alt="LUMIS" class="footer-logo-img" /></div>
+    <p class="footer-copy">© 2024 LUMIS. Anime data by AniList.</p>
+    <div class="footer-links">
+      <a href="anime-home.html">← Anime</a>
+      <a href="index.html">Home</a>
+    </div>
+  </footer>
+
+  <script src="anime-app.js"></script>
+  <script>
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('mobile-menu-overlay').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.remove('open');
+      document.getElementById('mobile-menu-overlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+
+    const animeId = parseInt(AP.get('id'));
+    if (!animeId) location.href = 'anime-home.html';
+
+    async function load() {
+      const data = await gql(Q.detail, { id: animeId });
+      const a    = data.Media;
+
+      const title  = a.title.english || a.title.romaji;
+      const alt    = a.title.english ? a.title.romaji : a.title.native;
+      const words  = title.split(' ');
+      const first  = words.slice(0,-1).join(' ');
+      const last   = words[words.length-1];
+
+      document.title = `${title} — LUMIS Anime`;
+      document.getElementById('ticker-text').innerHTML = `★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS ANIME &nbsp;·&nbsp; ★ ${title.toUpperCase()} &nbsp;·&nbsp; LUMIS ANIME &nbsp;·&nbsp;`;
+
+      // Banner
+      const bannerSrc = a.bannerImage || a.coverImage?.extraLarge;
+      if (bannerSrc) {
+        const img = document.createElement('img');
+        img.src = bannerSrc; img.alt = '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        document.getElementById('banner-inner').replaceWith(img);
+      }
+
+      // Progress / watch label
+      const prog = AS.progress(animeId);
+      const watchEp = prog.last || 1;
+      const watchLabel = prog.last ? `▶ Continue — Ep ${prog.last}` : '▶ Watch';
+      const studios = a.studios?.nodes?.map(s=>s.name).join(', ') || '—';
+
+      const totalEps = a.episodes || (a.nextAiringEpisode ? a.nextAiringEpisode.episode - 1 : 0);
+
+      // Header
+      document.getElementById('detail-head').innerHTML = `
+        <div class="anime-detail-poster">
+          <img src="${a.coverImage?.extraLarge||a.coverImage?.large||''}" alt="${title}" loading="lazy" />
+        </div>
+        <div class="anime-detail-meta">
+          <h1 class="anime-detail-title">${first ? `${first}<br><em>${last}</em>` : `<em>${last}</em>`}</h1>
+          ${alt ? `<div class="anime-detail-alt">${alt}</div>` : ''}
+          <div class="anime-stats">
+            ${a.averageScore ? `<div><div class="anime-stat-val gold">★ ${afmt.score(a.averageScore)}</div><div class="anime-stat-key">Score</div></div>` : ''}
+            ${a.episodes     ? `<div><div class="anime-stat-val">${a.episodes}</div><div class="anime-stat-key">Episodes</div></div>` : ''}
+            <div><div class="anime-stat-val">${afmt.status(a.status)}</div><div class="anime-stat-key">Status</div></div>
+            ${a.season ? `<div><div class="anime-stat-val">${afmt.season(a.season,a.seasonYear)}</div><div class="anime-stat-key">Season</div></div>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+            <button class="btn-primary" onclick="AP.go('anime-watch.html',{id:${a.id},ep:${watchEp}})">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              ${watchLabel}
+            </button>
+            <button class="btn-secondary" id="wl-btn">
+              <span>${AS.inWatchlist(animeId) ? '♥ In List' : '♡ My List'}</span>
+            </button>
+          </div>
+        </div>`;
+
+      document.getElementById('wl-btn').addEventListener('click', () => {
+        AS.toggleWatchlist(a);
+        const saved = AS.inWatchlist(animeId);
+        document.querySelector('#wl-btn span').textContent = saved ? '♥ In List' : '♡ My List';
+        lumisToast(saved ? `"${title}" added to list` : 'Removed from list');
+      });
+
+      // Body
+      document.getElementById('detail-body').style.display = '';
+      const desc  = afmt.plain(a.description||'');
+      const short = desc.length > 450 ? desc.slice(0,450)+'…' : desc;
+
+      // Trailer
+      const trailerHtml = (a.trailer?.id && a.trailer.site==='youtube') ? `
+        <div class="anime-section-h" style="margin-top:0">Trailer</div>
+        <div class="anime-trailer-wrap">
+          <iframe src="https://www.youtube.com/embed/${a.trailer.id}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+        </div>` : '';
+
+      // Episodes
+      let epsHtml = '';
+      if (totalEps > 0) {
+        const p2 = AS.progress(animeId);
+        const done = p2.eps||[], last = p2.last;
+        const btns = Array.from({length:totalEps},(_,i)=>i+1).map(i=>
+          `<a class="anime-ep-btn${done.includes(i)?' done':''}${last===i?' cur':''}" href="anime-watch.html?id=${animeId}&ep=${i}">${i}</a>`
+        ).join('');
+        epsHtml = `
+          <div class="anime-section-h">Episodes <span style="color:var(--grey);font-size:13px;font-weight:400">(${totalEps})</span></div>
+          <div class="anime-ep-grid">${btns}</div>`;
+      }
+
+      // Characters
+      const chars = a.characters?.nodes?.filter(c=>c.image?.large)||[];
+      const charsHtml = chars.length ? `
+        <div class="anime-section-h">Characters</div>
+        <div class="anime-char-grid">${chars.map(c=>`
+          <div class="anime-char-card">
+            <img src="${c.image.large}" alt="" loading="lazy" onerror="this.style.display='none'">
+            <div class="anime-char-name">${c.name.full}</div>
+          </div>`).join('')}
+        </div>` : '';
+
+      // Relations
+      const related = a.relations?.edges?.filter(e=>e.node.type==='ANIME'&&['SEQUEL','PREQUEL','SIDE_STORY','PARENT','ALTERNATIVE'].includes(e.relationType)).slice(0,10)||[];
+      const relHtml = related.length ? `
+        <div class="anime-section-h">Related</div>
+        <div class="anime-rel-row">${related.map(e=>`
+          <div class="anime-rel-card" onclick="AP.go('anime-detail.html',{id:'${e.node.id}'})">
+            <img src="${e.node.coverImage?.large||''}" alt="" loading="lazy" onerror="this.src=''">
+            <div class="anime-rel-title">${e.node.title.romaji}</div>
+            <div class="anime-rel-type">${e.relationType.replace(/_/g,' ')}</div>
+          </div>`).join('')}
+        </div>` : '';
+
+      document.getElementById('main-col').innerHTML = `
+        <div class="anime-section-h" style="margin-top:0">Synopsis</div>
+        <p class="anime-overview" id="syn-text">${short}</p>
+        ${desc.length>450?`<span class="anime-read-more" id="read-more">Read more ▼</span>`:''}
+        ${trailerHtml}
+        ${epsHtml}
+        ${charsHtml}
+        ${relHtml}`;
+
+      if (desc.length>450) {
+        document.getElementById('read-more').addEventListener('click', () => {
+          document.getElementById('syn-text').textContent = desc;
+          document.getElementById('read-more').remove();
+        });
+      }
+
+      // Sidebar
+      document.getElementById('side-col').innerHTML = `
+        <div class="anime-info-box">
+          <div class="anime-info-box-title">Information</div>
+          <div class="anime-info-row"><span class="anime-info-k">Format</span><span class="anime-info-v">${a.format||'—'}</span></div>
+          <div class="anime-info-row"><span class="anime-info-k">Status</span><span class="anime-info-v">${afmt.status(a.status)}</span></div>
+          <div class="anime-info-row"><span class="anime-info-k">Season</span><span class="anime-info-v">${afmt.season(a.season,a.seasonYear)}</span></div>
+          <div class="anime-info-row"><span class="anime-info-k">Episodes</span><span class="anime-info-v">${a.episodes||'?'}</span></div>
+          <div class="anime-info-row"><span class="anime-info-k">Studio</span><span class="anime-info-v">${studios}</span></div>
+          <div class="anime-info-row"><span class="anime-info-k">Score</span><span class="anime-info-v" style="color:var(--gold)">${a.averageScore?afmt.score(a.averageScore)+' / 10':'—'}</span></div>
+        </div>
+        ${(a.genres||[]).length?`
+        <div class="anime-info-box">
+          <div class="anime-info-box-title">Genres</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            ${(a.genres||[]).map(g=>`<span class="anime-genre-chip" onclick="AP.go('anime-home.html',{})">${g}</span>`).join('')}
+          </div>
+        </div>`:''}`;
+
+      // Recommendations
+      const recs = a.recommendations?.nodes?.filter(n=>n.mediaRecommendation).map(n=>n.mediaRecommendation).slice(0,8)||[];
+      if (recs.length) {
+        const wrap = document.getElementById('recs-wrap');
+        wrap.innerHTML = `
+          <div class="anime-section" style="padding:0;margin-top:32px">
+            <div class="anime-section-header">
+              <h2 class="anime-section-title">You May Also Like</h2>
+              <div class="anime-section-line"></div>
+            </div>
+            <div class="anime-scroll-row" id="recs-grid"></div>
+          </div>`;
+        recs.forEach(r => {
+          const c = animeCard(r);
+          document.getElementById('recs-grid').appendChild(c);
+        });
+      }
+    }
+
+    load().catch(e => {
+      console.error(e);
+      document.getElementById('detail-head').innerHTML = `
+        <div class="anime-empty" style="grid-column:1/-1">
+          <div class="anime-empty-icon">⚠️</div>
+          <h2>Failed to load</h2>
+          <p>${e.message}</p>
+          <a href="anime-home.html">← Back to Anime</a>
+        </div>`;
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>
