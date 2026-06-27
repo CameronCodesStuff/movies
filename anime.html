@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anime — LUMIS</title>
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: #080808; }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 44px;
+      background: rgba(8,8,8,0.97);
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+      display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    }
+    .topbar a {
+      display: flex; align-items: center;
+      text-decoration: none;
+    }
+    .topbar img { height: 32px; width: auto; filter: drop-shadow(0 0 6px rgba(201,168,76,0.3)); }
+    .topbar-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.1); }
+    .topbar-name {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: #C9A84C; letter-spacing: 0.05em;
+    }
+    .topbar-home {
+      margin-left: auto; font-family: 'Segoe UI', sans-serif;
+      font-size: 12px; color: #888; text-decoration: none;
+      transition: color 0.2s;
+    }
+    .topbar-home:hover { color: #C9A84C; }
+
+    iframe {
+      position: fixed;
+      top: 44px; left: 0; right: 0; bottom: 0;
+      width: 100%; height: calc(100% - 44px);
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html"><img src="images/logo.png" alt="LUMIS" /></a>
+    <div class="topbar-sep"></div>
+    <span class="topbar-name">Anime — Powered by Animetsu</span>
+    <a href="index.html" class="topbar-home">← Back to LUMIS</a>
+  </div>
+  <iframe
+    src="https://animetsu.cc/home"
+    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+    allowfullscreen>
+  </iframe>
+</body>
+</html>
