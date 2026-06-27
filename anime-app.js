@@ -123,7 +123,7 @@ const AP = {
   go(page, params) {
     if (this._navigating) return;
     this._navigating = true;
-    const u = new URL(page, location.origin);
+    const u = new URL(page, location.href);
     Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
     location.href = u.toString();
   }
